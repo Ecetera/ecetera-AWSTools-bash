@@ -1,0 +1,5 @@
+# Create the instance
+ec2-run-instances ami-83cd5eb9 -n 1 -k EceteraTS --instance-type t1.micro -g sg-7538dd1a --region ap-southeast-2 --subnet subnet-72e0d21b
+# Name i\the instance in the AWS EC2 console
+ec2-create-tags i-35e43b09 -t Name=gitserver --region=ap-southeast-2
+
