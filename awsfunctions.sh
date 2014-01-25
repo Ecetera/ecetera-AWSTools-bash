@@ -345,4 +345,48 @@ function delete-volume-by-tag {
   done
 }
 
+#############################
+#     Attach volumes        #
+#############################
+function attach_volume_to_instance_by_ids {
+  local VOLUME=$1; shift
+  local INSTANCE=$2; shift
+  local DEVICE=$3; shift
+  verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:attach_volume_to_instance_by_ids: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
+  ec2-attache-volume "${VOLUME}" -i "${INSTANCE}" -d "${DEVICE}" --region ${REGION}
+}
+
+function detach_volume_to_instance_by_ids {
+  local VOLUME=$1; shift
+  local INSTANCE=$2; shift
+  local DEVICE=$3; shift
+  verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:detach_volume_to_instance_by_ids: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
+  ec2-detache-volume "${VOLUME}" -i "${INSTANCE}" -d "${DEVICE}" --region ${REGION}
+}
+
+function attach_volume_to_instance_by_name_tag {
+  local VOLUME=$1; shift
+  local INSTANCE=$2; shift
+  local DEVICE=$3; shift
+  verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:attach_volume_to_instance_by_name_tag: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
+  local VOLID=`desc-volume-id-by-tag "${VOLUME}"`
+  local INSTID=`desc-instance-by-tag "${INSTANCE}"`
+  verifyarg $VOLID && verifyarg $INSTID || error "Error:        attach_volume_to_instance_by_name_tag: VOLID=$VOLID INSTID=$INSTID"
+  #### TODO
+  ###  TODO need to make sure lenth of arrays match so if 3 volumes then need 3 dev names
+  for V in $VOLID; do
+    attach_volume_to_instance_by_ids "$VOLID" "$INSTID" "$DEVICE"
+  done
+}
+
+function detach_volume_to_instance_by_name_tag {
+  local VOLUME=$1; shift
+  local INSTANCE=$2; shift
+  local DEVICE=$3; shift
+  verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:detach_volume_to_instance_by_name_tag: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
+  local VOLID=`desc-volume-id-by-tag "${VOLUME}"`
+  local INSTID=`desc-instance-by-tag "${INSTANCE}"`
+  verifyarg $VOLID && verifyarg $INSTID || error "Error:        detach_volume_to_instance_by_name_tag: VOLID=$VOLID INSTID=$INSTID"
+  detach_volume_to_instance_by_ids "$VOLID" "$INSTID" "$DEVICE"
+}
 
