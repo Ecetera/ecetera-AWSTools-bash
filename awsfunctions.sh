@@ -93,13 +93,13 @@ function testsettings {
 #############################################################
 # Thing descriptions                                     #
 #############################################################
-# usage: describe-thing-by-tag $1 $2 $3 $4                  #
+# usage: describe_thing_by_tag $1 $2 $3 $4                  #
 # $1 = <INSTANCE|VOLUME|??>                                 #
 # $1 = OUTPUT section                                       #
 # $2 = <TAGVALUE>                                           #
-# $3 = <OUTPUT-COL-NUM>                                     #
+# $3 = <OUTPUT_COL_NUM>                                     #
 #############################################################
-function describe-thing-by-tag {
+function describe_thing_by_tag {
   local THING=$1
   local OUTPUT=$2
   local TAG=$3
@@ -114,23 +114,23 @@ function describe-thing-by-tag {
          local INFO=`ec2-describe-volumes -F tag-value=${TAG} --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
          ;;
        * )
-         error "Oops: describe-thing-by-tag: unknown THING=$THING"
+         error "Oops: describe_thing_by_tag: unknown THING=$THING"
          ;;
     esac
     message "$INFO"
   else
-    error "Oops: describe-thing-by-tag: THING=$THING OUTPUT=$OUTPUT TAG=$TAG COLUMN=$COLUMN"
+    error "Oops: describe_thing_by_tag: THING=$THING OUTPUT=$OUTPUT TAG=$TAG COLUMN=$COLUMN"
   fi
 }
 
 #############################################################
-# usage: describe-thing-by-id $1 $2 $3 $4                  #
+# usage: describe_thing_by_id $1 $2 $3 $4                  #
 # $1 = <INSTANCE|VOLUME|??>                                 #
 # $2 = OUTPUT section                                       #
 # $3 = <ID>                                           #
-# $4 = <OUTPUT-COL-NUM>                                     #
+# $4 = <OUTPUT_COL_NUM>                                     #
 #############################################################
-function describe-thing-by-id {
+function describe_thing_by_id {
   local THING=$1
   local OUTPUT=$2
   local ID=$3
@@ -145,12 +145,12 @@ function describe-thing-by-id {
          local INFO=`ec2-describe-volumes $ID --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
          ;;
        * )
-         error "Oops: describe-thing-by-id: unknown THING=$THING"
+         error "Oops: describe_thing_by_id: unknown THING=$THING"
          ;;
     esac
     message "$INFO"
   else
-    error "Oops: describe-thing-by-id: THING=$THING OUTPUT=$OUTPUT ID=$ID COLUMN=$COLUMN"
+    error "Oops: describe_thing_by_id: THING=$THING OUTPUT=$OUTPUT ID=$ID COLUMN=$COLUMN"
   fi
 }
 
@@ -160,135 +160,135 @@ function describe-thing-by-id {
 #############################################################
 # Instance descriptions                                     #
 #############################################################
-# usage: describe-instance-by-tag $1 $2 $3                   #
+# usage: describe_instance_by_tag $1 $2 $3                   #
 # $1 = <RESERVATION|INSTANCE|BLOCKDEVICE|NIC|NICATTACHMENT> #
 # $2 = <TAGVALUE>                                           #
-# $3 = <OUTPUT-COL-NUM>                                     #
+# $3 = <OUTPUT_COL_NUM>                                     #
 #############################################################
-function describe-instance-by-tag {
-  describe-thing-by-tag "INSTANCE" "$1" "$2" "$3"
+function describe_instance_by_tag {
+  describe_thing_by_tag "INSTANCE" "$1" "$2" "$3"
 }
 
 #############################################################
-# usage: describe-instance-by-tag $1 $2 $3                   #
+# usage: describe_instance_by_tag $1 $2 $3                   #
 # $1 = <RESERVATION|INSTANCE|BLOCKDEVICE|NIC|NICATTACHMENT> #
-# $2 = <ID-Value>                                           #
-# $3 = <OUTPUT-COL-NUM>                                     #
+# $2 = <ID_Value>                                           #
+# $3 = <OUTPUT_COL_NUM>                                     #
 #############################################################
-function describe-instance-by-id {
-  describe-thing-by-id "INSTANCE" "$1" "$2" "$3"
+function describe_instance_by_id {
+  describe_thing_by_id "INSTANCE" "$1" "$2" "$3"
 }
 
 ###
 # Get the Instance DNS addresses via id
-# usage: find-instance-dns-by-id <ID>
-function desc-instance-dns-by-id {
-  describe-instance-by-id "INSTANCE" $1 4
+# usage: find_instance_dns_by_id <ID>
+function desc_instance_dns_by_id {
+  describe_instance_by_id "INSTANCE" $1 4
 }
 
 # Get the instance ID via a id value
-# usage: desc-instance-id-by-id <Tag>
-function desc-instance-id-by-id {
-  describe-instance-by-id "INSTANCE" $1 2
+# usage: desc_instance_id_by_id <Tag>
+function desc_instance_id_by_id {
+  describe_instance_by_id "INSTANCE" $1 2
 }
 
-# Get the instance AMI-ID via id
-# usage: desc-instance-ami-by-id <id>
-function desc-instance-ami-by-id {
-  describe-instance-by-id "INSTANCE" $1 3
+# Get the instance AMI_ID via id
+# usage: desc_instance_ami_by_id <id>
+function desc_instance_ami_by_id {
+  describe_instance_by_id "INSTANCE" $1 3
 }
 
-function desc-instance-status-by-id {
-  describe-instance-by-id "INSTANCE" $1 6
+function desc_instance_status_by_id {
+  describe_instance_by_id "INSTANCE" $1 6
 }
 
-function desc-instance-blockdevice-name-by-id {
-  describe-instance-by-id "BLOCKDEVICE" $1 2
+function desc_instance_blockdevice_name_by_id {
+  describe_instance_by_id "BLOCKDEVICE" $1 2
 }
 
-function desc-instance-blockdevice-volid-by-id {
-  describe-instance-by-id "BLOCKDEVICE" $1 3
+function desc_instance_blockdevice_volid_by_id {
+  describe_instance_by_id "BLOCKDEVICE" $1 3
 }
 
 ###
 # Get the Instance DNS addresses via a tag name
-# usage: find-instance-dns-by-tag <Tag>
-function desc-instance-dns-by-tag {
-  describe-instance-by-tag "INSTANCE" $1 4
+# usage: find_instance_dns_by_tag <Tag>
+function desc_instance_dns_by_tag {
+  describe_instance_by_tag "INSTANCE" $1 4
 }
 
 # Get the instance ID via a tag value
-# usage: desc-instance-id-by-tag <Tag>
-function desc-instance-id-by-tag {
-  describe-instance-by-tag "INSTANCE" $1 2
+# usage: desc_instance_id_by_tag <Tag>
+function desc_instance_id_by_tag {
+  describe_instance_by_tag "INSTANCE" $1 2
 }
 
-# Get the instance AMI-ID via a tag value
-# usage: desc-instance-ami-by-tag <Tag>
-function desc-instance-ami-by-tag {
-  describe-instance-by-tag "INSTANCE" $1 3
+# Get the instance AMI_ID via a tag value
+# usage: desc_instance_ami_by_tag <Tag>
+function desc_instance_ami_by_tag {
+  describe_instance_by_tag "INSTANCE" $1 3
 }
 
-function desc-instance-status-by-tag {
-  describe-instance-by-tag "INSTANCE" $1 6
+function desc_instance_status_by_tag {
+  describe_instance_by_tag "INSTANCE" $1 6
 }
 
-function desc-instance-blockdevice-name-by-tag {
-  describe-instance-by-tag "BLOCKDEVICE" $1 2
+function desc_instance_blockdevice_name_by_tag {
+  describe_instance_by_tag "BLOCKDEVICE" $1 2
 }
 
-function desc-instance-blockdevice-volid-by-tag {
-  describe-instance-by-tag "BLOCKDEVICE" $1 3
+function desc_instance_blockdevice_volid_by_tag {
+  describe_instance_by_tag "BLOCKDEVICE" $1 3
 }
 
 #############################################################
 # Volume descriptions                                       #
 #############################################################
-# usage: describe-volume-by-id $1 $2 $3                     #
+# usage: describe_volume_by_id $1 $2 $3                     #
 # $1 = <VOLUME|ATTACHMENT|TAG>                              #
 # $2 = <id>                                                 #
-# $3 = <OUTPUT-COL-NUM>                                     #
+# $3 = <OUTPUT_COL_NUM>                                     #
 #############################################################
-function describe-volume-by-id {
-  describe-thing-by-id "VOLUME" "$1" "$2" "$3"
+function describe_volume_by_id {
+  describe_thing_by_id "VOLUME" "$1" "$2" "$3"
 }
 
 
-function desc-volume-id-by-id {
-  describe-volume-by-id "VOLUME" $1 2
+function desc_volume_id_by_id {
+  describe_volume_by_id "VOLUME" $1 2
 }
 
-function desc-volume-size-by-id {
-  describe-volume-by-id "VOLUME" $1 3
+function desc_volume_size_by_id {
+  describe_volume_by_id "VOLUME" $1 3
 }
 
-function desc-volume-status-by-id {
-  describe-volume-by-id "VOLUME" $1 6
+function desc_volume_status_by_id {
+  describe_volume_by_id "VOLUME" $1 6
 }
 
 
 #############################################################
 # Volume descriptions                                       #
 #############################################################
-# usage: describe-volumes-by-tag $1 $2 $3                    #
+# usage: describe_volumes_by_tag $1 $2 $3                    #
 # $1 = <VOLUME|ATTACHMENT|TAG>                              #
 # $2 = <TAGVALUE>                                           #
-# $3 = <OUTPUT-COL-NUM>                                     #
+# $3 = <OUTPUT_COL_NUM>                                     #
 #############################################################
-function describe-volumes-by-tag {
-  describe-thing-by-tag "VOLUME" "$1" "$2" "$3"
+function describe_volumes_by_tag {
+  describe_thing_by_tag "VOLUME" "$1" "$2" "$3"
 }
 
-function desc-volume-id-by-tag {
-  describe-volumes-by-tag "VOLUME" $1 2
+function desc_volume_id_by_tag {
+  describe_volumes_by_tag "VOLUME" $1 2
 }
 
-function desc-volume-size-by-tag {
-  describe-volumes-by-tag "VOLUME" $1 3
+function desc_volume_size_by_tag {
+  describe_volumes_by_tag "VOLUME" $1 3
 }
 
-function desc-volume-status-by-tag {
-  describe-volumes-by-tag "VOLUME" $1 6
+function desc_volume_status_by_tag {
+  describe_volumes_by_tag "VOLUME" $1 6
 }
 
 ###########################################################
@@ -299,48 +299,48 @@ function desc-volume-status-by-tag {
 # VOLUME=`ec2-create-volume -s 50 --region ${REGION} -z ${ZONE} | awk '/VOLUME/ {print $2}'`
 #############################################################
 # create volume and tag it. return the volID
-function create-volume {
+function create_volume {
   local TAG=$1; shift
   local SIZE=$1; shift
-  verifyarg $TAG && verifyarg $SIZE || error "Error:create-volume: TAG=$TAG SIZE=$SIZE"
+  verifyarg $TAG && verifyarg $SIZE || error "Error:create_volume: TAG=$TAG SIZE=$SIZE"
   local VOLUME=`ec2-create-volume --size ${SIZE} --region ${REGION} -z ${ZONE} | awk '/VOLUME/ {print $2}'`
   local TAGDETAILS=`ec2-create-tags ${VOLUME} -t Name=${TAG} --region ${REGION}`
   message $VOLUME
 }
-function create-snapshot {
+function create_snapshot {
   local TAG=$1; shift
   local FROM=$1; shift
   local DESC=$1; shift
-  verifyarg "$TAG" && verifyarg "$FROM" && verifyarg "$DESC" || error "Error:create-snapshot: TAG=$TAG FROM=$FROM DESC=\"$DESC\""
+  verifyarg "$TAG" && verifyarg "$FROM" && verifyarg "$DESC" || error "Error:create_snapshot: TAG=$TAG FROM=$FROM DESC=\"$DESC\""
   TAG="-${TAG}"
-  local FROMIDs=`desc-volume-id-by-tag $FROM`
+  local FROMIDs=`desc_volume_id_by_tag $FROM`
   for F in $FROMIDs; do 
     local SNAP=`ec2-create-snapshot --region ${REGION} -d "${DESC}" "${F}" | awk '/SNAPSHOT/ {print $2}'`
     local TAGDETAILS=`ec2-create-tags ${SNAP} -t Name=snapshot-${F}${TAG} --region ${REGION}`
     message "$SNAP" 
   done
 }
-function create-sized-volume {
+function create_sized_volume {
   local TAG=$1
   local SIZE=$2
-  verifyarg $TAG && verifyarg $SIZE || error "Error:create-50G-volume: TAG=$TAG SIZE=$SIZE"
-  create-volume $TAG $SIZE
+  verifyarg $TAG && verifyarg $SIZE || error "Error:create_50G_volume: TAG=$TAG SIZE=$SIZE"
+  create_volume $TAG $SIZE
 }
-function create-50G-volume {
-  create-sized-volume $1 50
+function create_50G_volume {
+  create_sized_volume $1 50
 }
-function delete-volume-by-id {
+function delete_volume_by_id {
   local ID=$1
-  verifyarg $ID  || error "Error:delete-volume-by-id: No ID supplied"
+  verifyarg $ID  || error "Error:delete_volume_by_id: No ID supplied"
   local THEID=$(ec2-delete-volume --region ${REGION} $ID | awk '/VOLUME/ {print $2}')
   message $THEID
 }
-function delete-volume-by-tag {
+function delete_volume_by_tag {
   local TAG=$1
-  verifyarg $TAG || error "Error:delete-volumes-by-tag: No TAG supplied"
-  local IDs=`desc-volume-id-by-tag $TAG`
+  verifyarg $TAG || error "Error:delete_volumes_by_tag: No TAG supplied"
+  local IDs=`desc_volume_id_by_tag $TAG`
   for id in $IDs; do
-    local i=`delete-volume-by-id $id`
+    local i=`delete_volume_by_id $id`
     message -d "delted volume $i"
   done
 }
@@ -369,8 +369,8 @@ function attach_volume_to_instance_by_name_tag {
   local INSTANCE=$2; shift
   local DEVICE=$3; shift
   verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:attach_volume_to_instance_by_name_tag: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
-  local VOLID=`desc-volume-id-by-tag "${VOLUME}"`
-  local INSTID=`desc-instance-by-tag "${INSTANCE}"`
+  local VOLID=`desc_volume_id_by_tag "${VOLUME}"`
+  local INSTID=`desc_instance_by_tag "${INSTANCE}"`
   verifyarg $VOLID && verifyarg $INSTID || error "Error:        attach_volume_to_instance_by_name_tag: VOLID=$VOLID INSTID=$INSTID"
   #### TODO
   ###  TODO need to make sure lenth of arrays match so if 3 volumes then need 3 dev names
@@ -384,8 +384,8 @@ function detach_volume_to_instance_by_name_tag {
   local INSTANCE=$2; shift
   local DEVICE=$3; shift
   verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:detach_volume_to_instance_by_name_tag: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
-  local VOLID=`desc-volume-id-by-tag "${VOLUME}"`
-  local INSTID=`desc-instance-by-tag "${INSTANCE}"`
+  local VOLID=`desc_volume_id_by_tag "${VOLUME}"`
+  local INSTID=`desc_instance_by_tag "${INSTANCE}"`
   verifyarg $VOLID && verifyarg $INSTID || error "Error:        detach_volume_to_instance_by_name_tag: VOLID=$VOLID INSTID=$INSTID"
   detach_volume_to_instance_by_ids "$VOLID" "$INSTID" "$DEVICE"
 }
