@@ -80,9 +80,12 @@ function testsettings {
   verifyarg $ZONE || error "ZONE is not set"
   verifyarg $KEY || error "KEY is not set"
   verifyarg $GROUP || error "GROUP is not set"
-  verifyarg $NAME || error "NAME is not set"
+  verifyarg $SERVERNAME || error "SERVERNAME is not set"
   verifyarg $VOLNAME || error "VOLNAME is not set"
   verifyarg $VOLDEV || error "VOLDEV is not set"
+  verifyarg $VOLSIZE || error "VOLSIZE is not set"
+  verifyarg $INSTANCE_TYPE || error "INSTANCE_TYPE is not set"
+  verifyarg $AMI || error "AMI is not set"
   return 0
 }
 
@@ -110,8 +113,10 @@ function describe_thing_by_tag {
          local INFO=`ec2-describe-instances -F tag-value=${TAG} --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
          ;;
        "VOLUME" )
- #             echo "ec2-describe-volumes -F tag-value=${TAG} --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'"
          local INFO=`ec2-describe-volumes -F tag-value=${TAG} --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
+         ;;
+       "GROUP" )
+         local INFO=`ec2-describe-group -F tag-value=${TAG} --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
          ;;
        * )
          error "Oops: describe_thing_by_tag: unknown THING=$THING"
@@ -141,8 +146,11 @@ function describe_thing_by_id {
          local INFO=`ec2-describe-instances $ID --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
          ;;
        "VOLUME" )
-  #       echo "ec2-describe-volumes $ID --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'" >&2
+         # echo "ec2-describe-volumes $ID --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'"
          local INFO=`ec2-describe-volumes $ID --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
+         ;;
+       "GROUP" )
+         local INFO=`ec2-describe-group $ID --region $REGION | awk '/'${OUTPUT}'/ {print $'$COLUMN'}'`
          ;;
        * )
          error "Oops: describe_thing_by_id: unknown THING=$THING"
@@ -266,6 +274,13 @@ function desc_volume_status_by_id {
   describe_volume_by_id "VOLUME" $1 6
 }
 
+function describe_volume_attach_status {
+  local VOLUMEID=$1; shift;
+  local INSTANCEID=$1; shift;
+  verifyarg $VOLUMEID && verifyarg $INSTANCEID || error "Error:describe_volume_attach_status: VOLUMEID=$VOLUMEID INSTANCEID=$INSTANCEID" 
+  describe_volume_by_id "ATTACHMENT.*${INSTANCEID}" ${VOLUMEID} 5
+}
+
 
 #############################################################
 # Volume descriptions                                       #
@@ -290,6 +305,43 @@ function desc_volume_size_by_tag {
 function desc_volume_status_by_tag {
   describe_volumes_by_tag "VOLUME" $1 6
 }
+
+#############################################################
+# group descriptions                                     #
+#############################################################
+# usage: describe_instance_by_tag $1 $2 $3                   #
+# $1 = <GROUP|PERMISSION> #
+# $2 = <TAGVALUE>                                           #
+# $3 = <OUTPUT_COL_NUM>                                     #
+#############################################################
+function describe_group_by_tag {
+  describe_thing_by_tag "GROUP" "$1" "$2" "$3"
+}
+
+#############################################################
+# usage: describe_instance_by_id $1 $2 $3                   #
+# $1 = <RESERVATION|INSTANCE|BLOCKDEVICE|NIC|NICATTACHMENT> #
+# $2 = <ID_Value>                                           #
+# $3 = <OUTPUT_COL_NUM>                                     #
+#############################################################
+function describe_group_by_id {
+  describe_thing_by_id "GROUP" "$1" "$2" "$3"
+}
+
+
+function desc_group_id_by_tag {
+  describe_volumes_by_tag "GROUP" $1 2
+}
+
+function desc_group_name_by_tag {
+  describe_volumes_by_tag "GROUP" $1 4
+}
+
+function desc_group_desc_by_tag {
+  describe_volumes_by_tag "GROUP" $1 5
+}
+
+
 
 ###########################################################
 # Create things                                           #
@@ -364,29 +416,26 @@ function detach_volume_to_instance_by_ids {
   ec2-detache-volume "${VOLUME}" -i "${INSTANCE}" -d "${DEVICE}" --region ${REGION}
 }
 
-function attach_volume_to_instance_by_name_tag {
-  local VOLUME=$1; shift
-  local INSTANCE=$2; shift
-  local DEVICE=$3; shift
-  verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:attach_volume_to_instance_by_name_tag: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
-  local VOLID=`desc_volume_id_by_tag "${VOLUME}"`
-  local INSTID=`desc_instance_by_tag "${INSTANCE}"`
-  verifyarg $VOLID && verifyarg $INSTID || error "Error:        attach_volume_to_instance_by_name_tag: VOLID=$VOLID INSTID=$INSTID"
-  #### TODO
-  ###  TODO need to make sure lenth of arrays match so if 3 volumes then need 3 dev names
-  for V in $VOLID; do
-    attach_volume_to_instance_by_ids "$VOLID" "$INSTID" "$DEVICE"
-  done
+function start_instance {
+  local AMI=$1; shift;
+  local INSTANCE_TYPE=$1; shift;
+  local GROUP=$1; shift;
+  verifyarg $AMI && verifyarg $GROUP || error "Error:start_instance: AMI=$AMI GROUP=$GROUP"
+  local INSTANCE=`ec2-run-instances $AMI -n 1 -k $KEY --instance-type $INSTANCE_TYPE -g $GROUP --region $REGION -z $ZONE | grep INSTANCE | awk '{print $2}'` 
+  echo $INSTANCE
 }
 
-function detach_volume_to_instance_by_name_tag {
-  local VOLUME=$1; shift
-  local INSTANCE=$2; shift
-  local DEVICE=$3; shift
-  verifyarg $VOLUME && verifyarg $INSTANCE && verifyarg $DEVICE || error "Error:detach_volume_to_instance_by_name_tag: VOLUME=$VOLUME INSTANCE=$INSTANCE DEVICE=$DEVICE"
-  local VOLID=`desc_volume_id_by_tag "${VOLUME}"`
-  local INSTID=`desc_instance_by_tag "${INSTANCE}"`
-  verifyarg $VOLID && verifyarg $INSTID || error "Error:        detach_volume_to_instance_by_name_tag: VOLID=$VOLID INSTID=$INSTID"
-  detach_volume_to_instance_by_ids "$VOLID" "$INSTID" "$DEVICE"
+function create_group_basic {
+  local NAME=$1; shift;
+  local DESC=$1; shift;
+  verifyarg $NAME && verifyarg $DESC || error "Error:create_group: NAME=$NAME DESC=$DESC"
+
+   ec2-create-group $NAME -d "Security group for git server" --region $REGION
+   ec2-authorize-group $NAME -P tcp -p 80 --region $REGION
+   ec2-authorize-group $NAME -P tcp -p 443 --region $REGION
+   ec2-authorize-group $NAME -P tcp -p 22 --region $REGION
+   ec2-authorize-group $NAME -P tcp -p 9418 --region $REGION
 }
+
+
 
