@@ -420,8 +420,11 @@ function start_instance {
   local AMI=$1; shift;
   local INSTANCE_TYPE=$1; shift;
   local GROUP=$1; shift;
-  verifyarg $AMI && verifyarg $GROUP || error "Error:start_instance: AMI=$AMI GROUP=$GROUP"
+  local TAG=$1; shift;
+  verifyarg $AMI && verifyarg $INSTANCE_TYPE && verifyarg $GROUP && verify $TAG|| error "Error:start_instance: AMI=$AMI INSTANCE_TYPE=$INSTANCE_TYPE GROUP=$GROUP TAG=$TAG"
   local INSTANCE=`ec2-run-instances $AMI -n 1 -k $KEY --instance-type $INSTANCE_TYPE -g $GROUP --region $REGION -z $ZONE | grep INSTANCE | awk '{print $2}'` 
+  
+  local local TAGDETAILS=`ec2-create-tags ${INSTANCE} -t Name=${TAG} --region ${REGION}`
   echo $INSTANCE
 }
 
